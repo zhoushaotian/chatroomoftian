@@ -15,6 +15,7 @@ app.use(session({ //设置session中保存的字段
     name: "chat",
     secret: "chat",
     resave: true,
+    saveUninitialized: false,
     cookie: {
         maxAge: 259200000
     },
@@ -25,7 +26,26 @@ app.use(session({ //设置session中保存的字段
 
 app.use(flash());
 
-app.use(require('express-formideble')({
+app.use(require('express-formidable')({
     uploadDir: path.join(__dirname, '/public/img'),
     keepExtensions: true
 }));
+
+app.locals.chat = {
+    title: "Tian's chat",
+    description: "nodejs+express+ws"
+};
+
+app.use(function(req, res, next) {
+    res.locals.user = req.session.user;
+    res.locals.success = req.flash('success').toString();
+    res.locals.error = req.flash('error').toString();
+    next();
+
+});
+
+routes(app);
+
+app.listen(3000, function() {
+    console.log("Chat Home listening on port 3000");
+});
