@@ -4,10 +4,12 @@ module.exports = {
         return User.create(user);
     },
     getUserByName: function getUserByName(name) {
-        var key;
-        User.findOne({ username: name }, function(result) {
-            key = result;
-        })
-        return key;
+        User.findOne({ username: name }, function(err, result) {
+            if (err) {
+                return false;
+            } else {
+                return result;
+            }
+        });
     }
 }
