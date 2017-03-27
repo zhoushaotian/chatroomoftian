@@ -1,15 +1,12 @@
-var User = require('./lib/mongo');
+var User = require('../lib/mongo').User;
 module.exports = {
     create: function create(user) {
-        return User.create(user);
+        return User.create(user).exec();
     },
     getUserByName: function getUserByName(name) {
-        User.findOne({ username: name }, function(err, result) {
-            if (err) {
-                return false;
-            } else {
-                return result;
-            }
-        });
+        return User
+            .findOne({ name: name })
+            .addCreatedAt()
+            .exec();
     }
-}
+};

@@ -1,0 +1,16 @@
+<div class="ui grid">
+            <div class="five wide centered column">
+                <% if (success) { %>
+                    <div class="ui small success message">
+                    <p><%=success%></p>
+                    </div>
+                <%}%>
+
+                <%if(error){ %>
+                    <div class="ui small error message">
+                        <p><%= error %></p>
+                        </div>
+                <%}%>
+
+            </div> 
+    </div>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Tian's Chat home</title>
+    <link rel="stylesheet" href="//cdn.bootcss.com/semantic-ui/2.1.8/semantic.min.css">
+    <script src="/js/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/semantic-ui/2.1.8/semantic.min.js"></script>
+   <script>
+    var userList={
+        list:[],
+    };
+    var messageList={
+        messages:[],
+        users:[]
+    };
+function showUserList(list) {
+    $('#user-list').empty();
+        $('#user-list').append('<div class="ui blue fluid button">当前在线用户</div>');
+    list.forEach(function(x){
+        $('#user-list div:last').after(`<div class="ui comments"><a class="author">${x}</a></div>`);
+    });
+   
+}
+function addUserList(list,user){
+
+        list.push(user);
+        list=list.filter(function(val,index,arr){
+        return arr.indexOf(val)===index;
+    });
+ 
+        showUserList(list);
+
+}
+function removeFromUserList(list, user) {
+ //   $('#user-list div').replaceAll("<div class='ui blue fluid button'>当前在线用户</div>");
+    list=list.filter(function(val,index){
+        return val!==user;
+    });
+
+    showUserList(list);
+}
+function addMessage(type,list, msg,user) {
+    list.messages.push(msg);
+    list.users.push(user);
+    if(type==='chat'){
+    $('#message-list div:last').after(`<div class="ui comments><div class="comment"><div class="content"><a class="author">${user}说</a><div class="text">${msg}</div></div></div></div>`);
+    };
+    if(type==='join'||type==='left'){
+    $('#message-list div:last').after(`<div class="ui comments><div class="comment"><div class="content"><div class="text">${msg}</div></div></div></div>`);
+    };
+}
+$(function () {
+    var ws = new WebSocket('ws://localhost:3001/chat');
+    ws.onmessage = function(event) {
+        var data = event.data;
+        console.log(data);
+        var msg = JSON.parse(data);
+        if (msg.type === 'list') {
+            userList.list = msg.data;
+            showUserList(userList.list);
+        } else if (msg.type === 'join') {
+            addMessage(msg.type,messageList,msg.data,msg.user);
+            addUserList(userList.list,msg.user);  
+        } else if (msg.type === 'left') {
+            removeFromUserList(userList.list, msg.user);
+            addMessage(msg.type,messageList, msg.data,msg.user);
+        } else if (msg.type === 'chat') {
+            addMessage(msg.type,messageList,msg.data, msg.user);
+        }
+    };
+    ws.onerror = function (code, msg) {
+        console.log('[ERROR] ' + code + ': ' + msg);
+    };
+    $('#send').on('click',function () {
+        var text = $('#put').val().trim();
+        console.log('[chat] ' + text);
+        if (text) {
+            $('#put').val('');
+            ws.send(text);
+        }
+    });
+
+});
+    </script>
+
+</head>
+<%-include('components/nav')%>
+<%-include('components/notification')%>
+<body>
+    <div class="ui segment">
+    <h1 class="ui huge center aligned teal header">Welcome to my Chat home</h1>
+    </div>
+   
+<div class="ui grid">
+    <div class="row">
+            <div id="user-list" class="ui segment three wide column" style="height:400px;;overflow:auto">
+                <div class="ui blue fluid button">
+                   当前在线用户
+                </div>
+            </div>
+            <div class="one wide column">
+            </div>
+            <div id="message-list" class="ui segment eleven wide column" style="height:400px;overflow:auto">        
+               <div class="ui blue fluid button">
+                   聊天记录
+                </div>
+            </div>
+    </div>
+        <div class="row">
+            <div class="five wide column">
+                
+            </div>
+            <div class="eleven wide column">
+                <input type="text" placeholder="说点什么...."  id="put" style="width:300px;height:36px"></input>
+                <input type="submit" id="send" class="ui blue button" value="发送">
+            </div>
+        </div>
+</div>
+<%- include('footer')%>
